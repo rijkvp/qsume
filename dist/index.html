@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <style>
+        @font-face {
+            font-family: 'Inter';
+            src: url('font/Inter\,wght.ttf') format('woff2-variations');
+            font-weight: 125 950;
+            font-stretch: 75% 125%;
+            font-style: oblique 0deg 12deg;
+        }
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        html {
+            height: 100%;
+            width: 100%;
+        }
+
+        #word {
+            text-align: center;
+            font-weight: 300;
+            height: 1000px;
+        }
+
+        #word strong {
+            font-weight: 600;
+        }
+    </style>
+    <script type="module" src="index.js"></script>
+    <title>Speed Reader</title>
+</head>
+
+<body data-theme="light">
+    <main class="container">
+        <h1>Speed Reader</h1>
+        <div id="controls">
+            <input type="file" id="file-picker" />
+            <label for="wpm-input" id="wpm-label" data-tooltip="The speed in WPM (Words Per Minute).">WPM</label>
+            <input type="range" id="wpm-input" name="wpm-input" min="100" max="800" step="10">
+
+            <label for="fontsize-input" id="fontsize-label" data-tooltip="The font size in rem (relative size).">Font
+                Size</label>
+            <input type="range" id="fontsize-input" name="wpm-input" min="1" max="10" step="0.1">
+
+            <input type="checkbox" id="lowercase-input" name="lowercase-input" checked>
+            <label for="lowercase-input" id="lowercase-label">Lowercase</label>
+
+            <input type="checkbox" id="charthickening-input" name="charthickening-input" checked>
+            <label for="charthickening-input" id="charthickening-label"
+                data-tooltip="Makes characters 'thicker' to improve readability.">Character
+                thickening</label>
+
+            <button id="play-button">Start</button>
+        </div>
+        <div id="status"></div>
+        <div id="word"></div>
+    </main>
+
+</body>
+
+</html>

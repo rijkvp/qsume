@@ -1,0 +1,19 @@
+{
+  "name": "qsume",
+  "version": "0.0.1",
+  "description": "Quick text and book consumption.",
+  "main": "index.html",
+  "scripts": {
+    "build": "npx swc src -d dist",
+    "watch": "npx swc src -d dist -w"
+  },
+  "author": "rijkvp",
+  "license": "ISC",
+  "devDependencies": {
+    "@swc/cli": "^0.1.57",
+    "@swc/core": "^1.2.170",
+    "@types/node": "^17.0.25",
+    "chokidar": "^3.5.3",
+    "typescript": "^4.6.3"
+  }
+}
