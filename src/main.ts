@@ -1,5 +1,5 @@
-import { Control, ControlType } from "./control.js";
-import { Book, FileLoader } from "./loader.js";
+import { Control, ControlType } from "./control";
+import { Book, FileLoader } from "./loader";
 
 
 // Controls
