@@ -5,8 +5,9 @@
     "module": "es2015",
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
-    "strict": false,
-    "removeComments": true
+    "strict": true,
+    "removeComments": true,
+    "sourceMap": true
   },
   "include": [
     "./src/**/*"

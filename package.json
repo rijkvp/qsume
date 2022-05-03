@@ -2,9 +2,8 @@
   "name": "qsume",
   "version": "0.0.1",
   "description": "Quick text and book consumption.",
-  "main": "index.html",
   "scripts": {
-    "dev": "webpack --mode development",
+    "dev": "webpack --mode development --watch --devtool source-map",
     "prod": "webpack --mode production"
   },
   "author": "rijkvp",
