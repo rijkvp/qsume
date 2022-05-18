@@ -25,7 +25,7 @@ class Reader {
     file: ReadableFile | null = null;
     previoudsFrame: number = 0;
     timer: number = 0;
-    section: number = 0;
+    currentSection: number = 0;
     word: number = 0;
 
     constructor() {
@@ -41,11 +41,11 @@ class Reader {
 
         const fileLoader = new FileLoader((doc: ReadableFile) => {
             this.file = doc;
-            this.section = 0;
+            this.currentSection = 0;
             this.word = 0;
         });
         document.getElementById('file-picker')?.addEventListener('change', (e: any) => {
-            let file = e.target!.files[0];
+            const file = e.target!.files[0];
             fileLoader.loadFile(file);
         });
 
@@ -73,24 +73,26 @@ class Reader {
 
             if (r.timer >= delay) {
                 r.timer = 0;
-                if (r.section < r.file.sections.length) {
-                    const section = r.file.sections[r.section];
+                if (r.currentSection < r.file.sections.length) {
+                    const section = r.file.sections[r.currentSection];
                     if (r.word < section.words.length) {
                         r.wordContainer.innerHTML = r.renderWord();
                         r.word++;
-                        var progress = (r.word / section.words.length * 100).toFixed(2);
-                        var wordsLeft = section.words.length - r.word;
-                        var secondsLeft = wordsLeft * delay;
-                        var hoursLeft = secondsLeft / 3600
-                        var timeLeft: string;
-                        if (hoursLeft >= 0.1) {
-                            timeLeft = `${hoursLeft.toFixed(2)} hours`;
-                        } else {
-                            timeLeft = `${Math.ceil(secondsLeft).toString()} seconds`;
+
+                        const totalWords = r.file.wordCount();
+                        const wordNumber = r.file.wordCount(r.currentSection) + r.word;
+                        const progress = (wordNumber / totalWords * 100).toFixed(2);
+                        const wordsLeft = totalWords - wordNumber;
+                        const timeLeft = new Date(wordsLeft * delay * 1000).toISOString().substring(11, 19)
+                        r.statusContainer.innerHTML = `${r.file.title} - ${wordNumber}/${totalWords} - ${progress}% - ${timeLeft}`;
+                        if (r.file.sections.length > 1) {
+                            const sectionProgress = (r.word / section.words.length * 100).toFixed(2);
+                            const sectionWordsLeft = section.words.length - r.word;
+                            const sectionTimeLeft = new Date(sectionWordsLeft * delay * 1000).toISOString().substring(11, 19)
+                            r.statusContainer.innerHTML += `<br>${section.title} - ${r.word}/${section.words.length} - ${sectionProgress}% - ${sectionTimeLeft}`;
                         }
-                        r.statusContainer.innerHTML = `${r.file.title} - ${r.word}/${section.words.length}  ${progress}%    ${timeLeft}`;
                     } else {
-                        r.section++;
+                        r.currentSection++;
                         r.word = 0;
                     }
                 } else {
@@ -105,7 +107,7 @@ class Reader {
         if (this.file == null) {
             throw new Error("no file loaded");
         }
-        var text = this.file.sections[this.section].words[this.word];
+        let text = this.file.sections[this.currentSection].words[this.word];
         if (this.lowerCaseControl.value) {
             text = text.toLowerCase();
         }
@@ -118,8 +120,8 @@ class Reader {
             } else {
                 thickLetters = Math.round(text.length * 0.4);
             }
-            let thickPart = text.substring(0, thickLetters);
-            let normalPart = text.substring(thickLetters);
+            const thickPart = text.substring(0, thickLetters);
+            const normalPart = text.substring(thickLetters);
             text = `<strong>${thickPart}</strong>${normalPart}`;
         }
         return text;
