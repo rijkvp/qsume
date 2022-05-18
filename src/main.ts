@@ -35,7 +35,7 @@ document.getElementById("play-button")!.addEventListener('click', () => {
 });
 
 function generateWords() {
-    var text = currentBook.words[currentWord];
+    var text = currentBook.chapters[currentWord];
     if (lowerCaseControl.value) {
         text = text.toLowerCase();
     }
@@ -68,12 +68,12 @@ function appLoop(currentTime: DOMHighResTimeStamp) {
     const delay = 60 / wpmControl.value;
 
     if (timer >= delay) {
-        if (currentWord < currentBook.words.length) {
+        if (currentWord < currentBook.chapters.length) {
             wordContainer.innerHTML = generateWords();
             timer = 0;
             currentWord++;
-            var progress = (currentWord / currentBook.words.length * 100).toFixed(2);
-            var wordsLeft = currentBook.words.length - currentWord;
+            var progress = (currentWord / currentBook.chapters.length * 100).toFixed(2);
+            var wordsLeft = currentBook.chapters.length - currentWord;
             var secondsLeft = wordsLeft * delay;
             var hoursLeft = secondsLeft / 3600
             var timeLeft: string;
@@ -82,7 +82,7 @@ function appLoop(currentTime: DOMHighResTimeStamp) {
             } else {
                 timeLeft = `${Math.ceil(secondsLeft).toString()} seconds`;
             }
-            statusContainer.innerHTML = `${currentBook.fileName} - ${currentWord}/${currentBook.words.length}  ${progress}%    ${timeLeft}`;
+            statusContainer.innerHTML = `${currentBook.filename} - ${currentWord}/${currentBook.chapters.length}  ${progress}%    ${timeLeft}`;
         } else {
             wordContainer.innerHTML = "...";
         }
