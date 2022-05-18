@@ -23,10 +23,18 @@
             width: 100%;
         }
 
+        #window {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 32px;
+            margin: 32px;
+            padding: 64px;
+            height: 400px;
+        }
+
         #word {
             text-align: center;
             font-weight: 300;
-            height: 1000px;
+            line-height: 242px;
         }
 
         #word strong {
@@ -34,12 +42,20 @@
         }
     </style>
     <script type="module" src="bundle.js"></script>
-    <title>Speed Reader</title>
+    <title>Qsume</title>
 </head>
 
-<body data-theme="light">
+<body>
     <main class="container">
-        <h1>Speed Reader</h1>
+        <hgroup>
+            <h1>Qsume</h1>
+            <h3>Quick content consumption using speed reading</h3>
+        </hgroup>
+
+        <div id="window">
+            <div id="word"></div>
+        </div>
+        <div id="status"></div>
         <div id="controls">
             <input type="file" id="file-picker" />
             <label for="wpm-input" id="wpm-label" data-tooltip="The speed in WPM (Words Per Minute).">WPM</label>
@@ -59,8 +75,6 @@
 
             <button id="play-button">Start</button>
         </div>
-        <div id="status"></div>
-        <div id="word"></div>
     </main>
 
 </body>
