@@ -1,110 +1,127 @@
 import { Control, ControlType } from "./control";
-import { Book, FileLoader } from "./loader";
+import { ReadableFile, FileLoader } from "./loader";
 
 
-// Controls
+let r: Reader;
 
-var wpmControl: Control;
-var fontSizeControl: Control;
-var lowerCaseControl: Control;
-var charThickeningControl: Control;
-
-const wordContainer = document.getElementById("word")!;
-const statusContainer = document.getElementById("status")!;
-
-
-// Reading
-
-var oldTime = 0;
-var timer = 0;
-
-// var words: Array<string> = ["No", "File", "Loaded", "Yet"];
-var currentBook: Book;
-var currentWord = 0;
-
-const fileLoader = new FileLoader((book: Book) => {
-    currentBook = book;
-    currentWord = 0;
+window.addEventListener('load', () => {
+    r = new Reader();
+    r.start();
 });
 
-var isRunning = false;
-document.getElementById("play-button")!.addEventListener('click', () => {
-    isRunning = !isRunning;
-    document.getElementById("play-button")!.innerHTML = isRunning ? "Pause" : "Resume";
-    timer = 0;
-});
+class Reader {
+    // Containers
+    wordContainer: HTMLElement;
+    statusContainer: HTMLElement;
 
-function generateWords() {
-    var text = currentBook.chapters[currentWord];
-    if (lowerCaseControl.value) {
-        text = text.toLowerCase();
+    // Controls
+    wpmControl: Control;
+    fontSizeControl: Control;
+    lowerCaseControl: Control;
+    charThickeningControl: Control;
+
+    // Reading
+    isRunning: boolean = false;
+    file: ReadableFile | null = null;
+    previoudsFrame: number = 0;
+    timer: number = 0;
+    section: number = 0;
+    word: number = 0;
+
+    constructor() {
+        this.wordContainer = document.getElementById("word")!;
+        this.statusContainer = document.getElementById("status")!;
+
+        this.wpmControl = new Control("wpm", ControlType.Range, 400, "Speed ", " WPM");
+        this.fontSizeControl = new Control("fontsize", ControlType.Range, 3, "Font size ", " rem", (value: any) => {
+            document.getElementById("word")!.style.fontSize = value.toString() + "rem";
+        });
+        this.lowerCaseControl = new Control("lowercase", ControlType.Checkbox, false, "Lowercase ");
+        this.charThickeningControl = new Control("charthickening", ControlType.Checkbox, true, "Char thickening ");
+
+        const fileLoader = new FileLoader((doc: ReadableFile) => {
+            this.file = doc;
+            this.section = 0;
+            this.word = 0;
+        });
+        document.getElementById('file-picker')?.addEventListener('change', (e: any) => {
+            let file = e.target!.files[0];
+            fileLoader.loadFile(file);
+        });
+
+        document.getElementById("play-button")!.addEventListener('click', () => {
+            this.isRunning = !this.isRunning;
+            document.getElementById("play-button")!.innerHTML = this.isRunning ? "Pause" : "Resume";
+            this.timer = 0;
+        });
     }
-    if (charThickeningControl.value) {
-        let boldLetters;
-        if (text.length <= 3) {
-            boldLetters = 1;
-        } else if (text.length == 4) {
-            boldLetters = 2;
-        } else {
-            boldLetters = Math.round(text.length * 0.4);
+
+    start() {
+        window.requestAnimationFrame(Reader.loop);
+    }
+
+    private static loop(time: DOMHighResTimeStamp) {
+        if (!r.file) {
+            r.wordContainer.innerHTML = "no file loaded";
         }
-        let boldPart = text.substring(0, boldLetters);
-        let normalPart = text.substring(boldLetters);
-        text = `<strong>${boldPart}</strong>${normalPart}`;
-    }
+        else if (r.isRunning) {
+            const dt = (time - r.previoudsFrame) / 1000;
+            r.previoudsFrame = time;
+            r.timer += dt;
 
-    return text;
-}
+            const delay = 60 / r.wpmControl.value;
 
-function appLoop(currentTime: DOMHighResTimeStamp) {
-    const dt = (currentTime - oldTime) / 1000;
-    oldTime = currentTime;
-    const fps = Math.round(1 / dt);
-
-    if (isRunning) {
-        timer += dt;
-    }
-
-    const delay = 60 / wpmControl.value;
-
-    if (timer >= delay) {
-        if (currentWord < currentBook.chapters.length) {
-            wordContainer.innerHTML = generateWords();
-            timer = 0;
-            currentWord++;
-            var progress = (currentWord / currentBook.chapters.length * 100).toFixed(2);
-            var wordsLeft = currentBook.chapters.length - currentWord;
-            var secondsLeft = wordsLeft * delay;
-            var hoursLeft = secondsLeft / 3600
-            var timeLeft: string;
-            if (hoursLeft >= 0.1) {
-                timeLeft = `${hoursLeft.toFixed(2)} hours`;
-            } else {
-                timeLeft = `${Math.ceil(secondsLeft).toString()} seconds`;
+            if (r.timer >= delay) {
+                r.timer = 0;
+                if (r.section < r.file.sections.length) {
+                    const section = r.file.sections[r.section];
+                    if (r.word < section.words.length) {
+                        r.wordContainer.innerHTML = r.renderWord();
+                        r.word++;
+                        var progress = (r.word / section.words.length * 100).toFixed(2);
+                        var wordsLeft = section.words.length - r.word;
+                        var secondsLeft = wordsLeft * delay;
+                        var hoursLeft = secondsLeft / 3600
+                        var timeLeft: string;
+                        if (hoursLeft >= 0.1) {
+                            timeLeft = `${hoursLeft.toFixed(2)} hours`;
+                        } else {
+                            timeLeft = `${Math.ceil(secondsLeft).toString()} seconds`;
+                        }
+                        r.statusContainer.innerHTML = `${r.file.title} - ${r.word}/${section.words.length}  ${progress}%    ${timeLeft}`;
+                    } else {
+                        r.section++;
+                        r.word = 0;
+                    }
+                } else {
+                    r.wordContainer.innerHTML = "Done";
+                }
             }
-            statusContainer.innerHTML = `${currentBook.filename} - ${currentWord}/${currentBook.chapters.length}  ${progress}%    ${timeLeft}`;
-        } else {
-            wordContainer.innerHTML = "...";
         }
+        window.requestAnimationFrame(Reader.loop);
     }
 
-
-    window.requestAnimationFrame(appLoop);
+    renderWord() {
+        if (this.file == null) {
+            throw new Error("no file loaded");
+        }
+        var text = this.file.sections[this.section].words[this.word];
+        if (this.lowerCaseControl.value) {
+            text = text.toLowerCase();
+        }
+        if (this.charThickeningControl.value) {
+            let thickLetters;
+            if (text.length <= 3) {
+                thickLetters = 1;
+            } else if (text.length == 4) {
+                thickLetters = 2;
+            } else {
+                thickLetters = Math.round(text.length * 0.4);
+            }
+            let thickPart = text.substring(0, thickLetters);
+            let normalPart = text.substring(thickLetters);
+            text = `<strong>${thickPart}</strong>${normalPart}`;
+        }
+        return text;
+    }
 }
-
-function init() {
-    wpmControl = new Control("wpm", ControlType.Range, 400, "Speed ", " WPM");
-    fontSizeControl = new Control("fontsize", ControlType.Range, 3, "Font size ", " rem", (value: any) => {
-        document.getElementById("word")!.style.fontSize = value.toString() + "rem";
-    });
-    lowerCaseControl = new Control("lowercase", ControlType.Checkbox, false, "Lowercase ");
-    charThickeningControl = new Control("charthickening", ControlType.Checkbox, true, "Char thickening ");
-
-    window.requestAnimationFrame(appLoop);
-    document.getElementById('file-picker')?.addEventListener('change', (e: any) => {
-        let file = e.target!.files[0];
-        fileLoader.loadFile(file);
-    });
-}
-
-window.addEventListener('load', init);

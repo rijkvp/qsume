@@ -1,7 +1,7 @@
 import { ZipReader, BlobReader, TextWriter, TextReader, Writer } from "@zip.js/zip.js";
 const fileReader = new FileReader();
 
-export class Chapter {
+export class DocumentSection {
     filename: string;
     name: string;
     words: string[];
@@ -13,24 +13,24 @@ export class Chapter {
     }
 }
 
-export class Book {
+export class ReadableFile {
     filename: string;
     title: string;
     author: string;
-    chapters: Array<Chapter>;
+    sections: Array<DocumentSection>;
 
-    constructor(filename: string, title: string, author: string, chapters: Chapter[]) {
+    constructor(filename: string, title: string, author: string, sections: DocumentSection[]) {
         this.filename = filename;
         this.title = title;
         this.author = author;
-        this.chapters = chapters;
+        this.sections = sections;
     }
 }
 
 export class FileLoader {
-    onFileLoaded: (file: Book) => void;
+    onFileLoaded: (file: ReadableFile) => void;
 
-    constructor(onFileLoaded: (file: Book) => void) {
+    constructor(onFileLoaded: (file: ReadableFile) => void) {
         this.onFileLoaded = onFileLoaded;
     }
 
@@ -78,8 +78,8 @@ export class FileLoader {
                     spineIds.push(idref);
                 }
             }
-            // 4. Load the document files and put them together
-            const chapters = new Array<Chapter>();
+            // 4. Load the sections
+            const sections = new Array<DocumentSection>();
             for (let id of spineIds) {
                 const fileName = files.get(id);
                 if (!fileName) {
@@ -91,22 +91,25 @@ export class FileLoader {
                     throw new Error(`missing file ${filePath} specified in spine`);
                 }
                 const fileText = await fileEntry.getData!(new TextWriter());
-                const fileContent = htmlToText(fileText);
+                // TODO: parse content type of file
+                const fileContent = htmlToText(fileText, "application/xhtml+xml");
                 const words = textToWords(fileContent);
-                const chapter = new Chapter(fileName, "Unkown Chapter", words);
-                chapters.push(chapter);
+                const section = new DocumentSection(fileName, "Unkown Chapter", words);
+                sections.push(section);
             }
-            console.log(chapters);
+            console.log(sections);
 
-            const book = new Book(inputFile.name, "Unkown Book", "Unkown Author", chapters);
-            this.onFileLoaded(book);
+            const result = new ReadableFile(inputFile.name, "Unkown Book", "Unkown Author", sections);
+            this.onFileLoaded(result);
         });
     }
 }
 
 // Converts HTML to a plain text string
-function htmlToText(text: string) {
-    return text;
+function htmlToText(text: string, contentType: DOMParserSupportedType) {
+    const parser = new DOMParser();
+    const document = parser.parseFromString(text, contentType);
+    return document.body.textContent || "";
 }
 
 // Converts plain text to an array of words
