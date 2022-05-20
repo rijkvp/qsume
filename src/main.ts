@@ -1,7 +1,6 @@
 import { Control, ControlType } from "./control";
 import { ReadableFile, FileLoader } from "./loader";
 
-
 let r: Reader;
 
 window.addEventListener('load', () => {
@@ -13,6 +12,8 @@ class Reader {
     // Containers
     wordContainer: HTMLElement;
     statusContainer: HTMLElement;
+
+    playButton: HTMLElement;
 
     // Controls
     wpmControl: Control;
@@ -32,26 +33,32 @@ class Reader {
         this.wordContainer = document.getElementById("word")!;
         this.statusContainer = document.getElementById("status")!;
 
-        this.wpmControl = new Control("wpm", ControlType.Range, 400, "Speed ", " WPM");
-        this.fontSizeControl = new Control("fontsize", ControlType.Range, 3, "Font size ", " rem", (value: any) => {
-            document.getElementById("word")!.style.fontSize = value.toString() + "rem";
+        this.wpmControl = new Control("wpm", ControlType.Range, 300, "Speed ", " WPM");
+        this.fontSizeControl = new Control("fontsize", ControlType.Range, 64, "Font size ", "px", (value: any) => {
+            document.getElementById("word")!.style.fontSize = value.toString() + "px";
         });
-        this.lowerCaseControl = new Control("lowercase", ControlType.Checkbox, false, "Lowercase ");
-        this.charThickeningControl = new Control("charthickening", ControlType.Checkbox, true, "Char thickening ");
+        this.lowerCaseControl = new Control("lowercase", ControlType.Checkbox, false, "Lowercase");
+        this.charThickeningControl = new Control("charthickening", ControlType.Checkbox, true, "Char thickening");
 
         const fileLoader = new FileLoader((doc: ReadableFile) => {
             this.file = doc;
+            this.isRunning = false;
+            this.timer = 0;
             this.currentSection = 0;
             this.word = 0;
+            this.wordContainer.innerHTML = this.file.title;
+            this.playButton.removeAttribute("disabled");
+            this.playButton.innerHTML = "Start";
         });
         document.getElementById('file-picker')?.addEventListener('change', (e: any) => {
             const file = e.target!.files[0];
             fileLoader.loadFile(file);
         });
 
-        document.getElementById("play-button")!.addEventListener('click', () => {
+        this.playButton = document.getElementById("play-button")!;
+        this.playButton.addEventListener('click', () => {
             this.isRunning = !this.isRunning;
-            document.getElementById("play-button")!.innerHTML = this.isRunning ? "Pause" : "Resume";
+            this.playButton.innerText = this.isRunning ? "Pause" : "Resume";
             this.timer = 0;
         });
     }
@@ -68,9 +75,7 @@ class Reader {
             const dt = (time - r.previoudsFrame) / 1000;
             r.previoudsFrame = time;
             r.timer += dt;
-
             const delay = 60 / r.wpmControl.value;
-
             if (r.timer >= delay) {
                 r.timer = 0;
                 if (r.currentSection < r.file.sections.length) {
@@ -78,7 +83,6 @@ class Reader {
                     if (r.word < section.words.length) {
                         r.wordContainer.innerHTML = r.renderWord();
                         r.word++;
-
                         const totalWords = r.file.wordCount();
                         const wordNumber = r.file.wordCount(r.currentSection) + r.word;
                         const progress = (wordNumber / totalWords * 100).toFixed(2);
@@ -89,7 +93,7 @@ class Reader {
                             const sectionProgress = (r.word / section.words.length * 100).toFixed(2);
                             const sectionWordsLeft = section.words.length - r.word;
                             const sectionTimeLeft = new Date(sectionWordsLeft * delay * 1000).toISOString().substring(11, 19)
-                            r.statusContainer.innerHTML += `<br>${section.title} - ${r.word}/${section.words.length} - ${sectionProgress}% - ${sectionTimeLeft}`;
+                            r.statusContainer.innerHTML += `<br>${section.title} (${r.currentSection + 1}/${r.file.sections.length}) - ${r.word}/${section.words.length} - ${sectionProgress}% - ${sectionTimeLeft}`;
                         }
                     } else {
                         r.currentSection++;

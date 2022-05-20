@@ -8,7 +8,7 @@
     <style>
         @font-face {
             font-family: 'Inter';
-            src: url('font/Inter\,wght.ttf') format('woff2-variations');
+            src: url('font/Inter.ttf') format('woff2-variations');
             font-weight: 125 950;
             font-stretch: 75% 125%;
             font-style: oblique 0deg 12deg;
@@ -40,6 +40,11 @@
         #word strong {
             font-weight: 600;
         }
+
+        #play-button {
+            max-width: 200px;
+            margin: 0 auto;
+        }
     </style>
     <script type="module" src="bundle.js"></script>
     <title>Qsume</title>
@@ -54,26 +59,51 @@
 
         <div id="window">
             <div id="word"></div>
+            <button id="play-button" disabled>Start</button>
         </div>
         <div id="status"></div>
+        <div id="source">
+            <h3>Source</h3>
+            <div class="grid">
+                <label for="file-input">Load text or EPUB file
+                    <input type="file" id="file-picker" name="file-input" accept="text/plain, application/epub+zip" />
+                </label>
+                <label for="url-input">Load from URL
+                    <input type="text" for="url-input" placeholder="Enter text here" />
+                    <button>Load URL</button>
+                </label>
+                <label for="manual-input">Paste text manually
+                    <input type="text" for="url-input" placeholder="Enter URL to webpage or file" />
+                    <button>Load text</button>
+                </label>
+            </div>
+        </div>
         <div id="controls">
-            <input type="file" id="file-picker" />
-            <label for="wpm-input" id="wpm-label" data-tooltip="The speed in WPM (Words Per Minute).">WPM</label>
-            <input type="range" id="wpm-input" name="wpm-input" min="100" max="800" step="10">
-
-            <label for="fontsize-input" id="fontsize-label" data-tooltip="The font size in rem (relative size).">Font
-                Size</label>
-            <input type="range" id="fontsize-input" name="wpm-input" min="1" max="10" step="0.1">
-
-            <input type="checkbox" id="lowercase-input" name="lowercase-input" checked>
-            <label for="lowercase-input" id="lowercase-label">Lowercase</label>
-
-            <input type="checkbox" id="charthickening-input" name="charthickening-input" checked>
-            <label for="charthickening-input" id="charthickening-label"
-                data-tooltip="Makes characters 'thicker' to improve readability.">Character
-                thickening</label>
-
-            <button id="play-button">Start</button>
+            <h3>Controls</h3>
+            <div class="grid">
+                <div>
+                    <input type="checkbox" id="lowercase-input" name="lowercase-input" checked>
+                    <label for="lowercase-input" id="lowercase-label">Lowercase</label>
+                    <br>
+                    <input type="checkbox" id="charthickening-input" name="charthickening-input" checked>
+                    <label for="charthickening-input" id="charthickening-label"
+                        data-tooltip="Makes characters 'thicker' to improve readability.">Character
+                        thickening</label>
+                </div>
+                <div>
+                    <label for="wpm-input" id="wpm-label" data-tooltip="The speed in WPM (Words Per Minute).">
+                        WPM
+                    </label>
+                    <input type="range" id="wpm-input" name="wpm-input" min="100" max="800" step="10">
+                </div>
+                <div>
+                    <label for="fontsize-input" id="fontsize-label"
+                        data-tooltip="The font size in rem (relative size).">
+                        Font size
+                    </label>
+                    <input type="range" id="fontsize-input" name="wpm-input" min="16" max="96" step="0.1">
+                </div>
+            </div>
         </div>
     </main>
 
