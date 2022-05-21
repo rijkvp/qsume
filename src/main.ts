@@ -1,5 +1,7 @@
 import { Control, ControlType } from "./control";
-import { ReadableFile, FileLoader } from "./loader";
+import { FileLoader } from "./loader";
+import { DocumentSection, ReadableFile } from "./readable";
+import { textToWords } from "./util";
 
 let r: Reader;
 
@@ -40,19 +42,33 @@ class Reader {
         this.lowerCaseControl = new Control("lowercase", ControlType.Checkbox, false, "Lowercase");
         this.charThickeningControl = new Control("charthickening", ControlType.Checkbox, true, "Char thickening");
 
-        const fileLoader = new FileLoader((doc: ReadableFile) => {
-            this.file = doc;
-            this.isRunning = false;
-            this.timer = 0;
-            this.currentSection = 0;
-            this.word = 0;
-            this.wordContainer.innerHTML = this.file.title;
-            this.playButton.removeAttribute("disabled");
-            this.playButton.innerHTML = "Start";
+        const fileLoader = new FileLoader((file: ReadableFile) => {
+            this.setFile(file);
         });
-        document.getElementById('file-picker')?.addEventListener('change', (e: any) => {
+        document.getElementById('file-input')!.addEventListener('change', (e: any) => {
             const file = e.target!.files[0];
             fileLoader.loadFile(file);
+        });
+        document.getElementById('manual-input-submit')!.addEventListener('click', (e: any) => {
+            const text = (<HTMLInputElement>document.getElementById('manual-input')!).value;
+            const file = new ReadableFile("(unkown)", "Pasted Text", "", [new DocumentSection("-", "-", textToWords(text))]);
+            this.setFile(file);
+        });
+        document.getElementById('url-input-submit')!.addEventListener('click', (e: any) => {
+            const url = (<HTMLInputElement>document.getElementById('url-input')!).value;
+            fetch(url)
+                .then(response => {
+                    if (response.ok) {
+                        response.text();
+                    } else {
+                        throw Error(`Failed to get content from web: ${response.status} - ${response.statusText}`);
+                    }
+                })
+                .then(text => {
+                    console.log(text);
+                }).catch(err => {
+                    console.log(err);
+                });
         });
 
         this.playButton = document.getElementById("play-button")!;
@@ -61,6 +77,17 @@ class Reader {
             this.playButton.innerText = this.isRunning ? "Pause" : "Resume";
             this.timer = 0;
         });
+    }
+
+    private setFile(file: ReadableFile) {
+        this.file = file;
+        this.isRunning = false;
+        this.timer = 0;
+        this.currentSection = 0;
+        this.word = 0;
+        this.wordContainer.innerHTML = this.file.title;
+        this.playButton.removeAttribute("disabled");
+        this.playButton.innerHTML = "Start";
     }
 
     start() {

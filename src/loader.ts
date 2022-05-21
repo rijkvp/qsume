@@ -1,42 +1,8 @@
 import { ZipReader, BlobReader, TextWriter, TextReader, Writer } from "@zip.js/zip.js";
+import { DocumentSection, ReadableFile } from "./readable";
+import { htmlToText, textToWords } from "./util";
+
 const fileReader = new FileReader();
-
-export class DocumentSection {
-    filename: string;
-    title: string;
-    words: string[];
-
-    constructor(filename: string, title: string, words: string[]) {
-        this.filename = filename;
-        this.title = title;
-        this.words = words;
-    }
-}
-
-export class ReadableFile {
-    filename: string;
-    title: string;
-    author: string;
-    sections: Array<DocumentSection>;
-
-    constructor(filename: string, title: string, author: string, sections: DocumentSection[]) {
-        this.filename = filename;
-        this.title = title;
-        this.author = author;
-        this.sections = sections;
-    }
-
-    wordCount(until: number = -1): number {
-        let count = 0;
-        for (let i = 0; i < this.sections.length; i++) {
-            if (until >= 0 && i >= until) {
-                break;
-            }
-            count += this.sections[i].words.length;
-        }
-        return count;
-    }
-}
 
 export class FileLoader {
     onFileLoaded: (file: ReadableFile) => void;
@@ -125,16 +91,4 @@ export class FileLoader {
                 throw new Error(`Unkown file type ${inputFile.type}`);
         }
     }
-}
-
-// Converts HTML to a plain text string
-function htmlToText(text: string, contentType: DOMParserSupportedType) {
-    const parser = new DOMParser();
-    const document = parser.parseFromString(text, contentType);
-    return document.body.textContent || "";
-}
-
-// Converts plain text to an array of words
-function textToWords(text: string) {
-    return text.split(/([\n\r\s]+)/g).map(item => item.trim()).filter(word => word != "");
 }

@@ -66,15 +66,15 @@
             <h3>Source</h3>
             <div class="grid">
                 <label for="file-input">Load text or EPUB file
-                    <input type="file" id="file-picker" name="file-input" accept="text/plain, application/epub+zip" />
+                    <input type="file" id="file-input" name="file-input" accept="text/plain, application/epub+zip" />
                 </label>
-                <label for="url-input">Load from URL
-                    <input type="text" for="url-input" placeholder="Enter text here" />
-                    <button>Load URL</button>
+                <label for="url-input">Load from web (resricted by CORS)
+                    <input type="text" id="url-input" for="url-input" placeholder="Enter URL here" />
+                    <button id="url-input-submit">Load from web</button>
                 </label>
                 <label for="manual-input">Paste text manually
-                    <input type="text" for="url-input" placeholder="Enter URL to webpage or file" />
-                    <button>Load text</button>
+                    <input type="text" id="manual-input" for="manual-input" placeholder="Enter text here" />
+                    <button id="manual-input-submit">Load text</button>
                 </label>
             </div>
         </div>
