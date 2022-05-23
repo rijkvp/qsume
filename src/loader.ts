@@ -23,20 +23,35 @@ export class FileLoader {
                     const zipReader = new ZipReader(new BlobReader(blob));
                     const entries = await zipReader.getEntries();
                     await zipReader.close();
-                    const opfEntry = entries.find(e => e.filename == "OEBPS/content.opf");
+
+                    const parser = new DOMParser();
+
+                    // 1. Read container.xml meta
+                    const containerEntry = entries.find(e => e.filename == "META-INF/container.xml");
+                    if (!containerEntry) {
+                        throw new Error("no container.xml file found");
+                    }
+                    const conainerText = await containerEntry.getData!(new TextWriter());
+                    const containerDoc = parser.parseFromString(conainerText, "application/xml");
+                    // NOTE: Only one rootfile is supported for now
+                    const rootFile = containerDoc.getElementsByTagName("rootfile")[0];
+                    const rootFilePath = rootFile.getAttribute("full-path")!;
+                    const rootDir = rootFilePath.split("/").slice(0,-1).join("/") 
+
+                    // 2. Read opf file
+                    const opfEntry = entries.find(e => e.filename == rootFilePath);
                     if (!opfEntry) {
                         throw new Error("no OPF file found");
                     }
                     const opfText = await opfEntry.getData!(new TextWriter());
-                    console.log(opfText)
-                    const parser = new DOMParser();
                     const opfDoc = parser.parseFromString(opfText, "application/xml");
-                    // 1. Parse the metadata
+
+                    // 3. Parse the metadata
                     const metadataElement = opfDoc.getElementsByTagName("metadata")[0];
                     const titleMeta = metadataElement.getElementsByTagName("dc:title")[0].innerHTML;
                     const creatorMeta = metadataElement.getElementsByTagName("dc:creator")[0].innerHTML;
-                    console.log(titleMeta, creatorMeta);
-                    // 2. Create a map of files from the manifest
+
+                    // 4. Create a map of files from the manifest
                     const manifestElement = opfDoc.getElementsByTagName("manifest")[0];
                     const manifest = new Map<string, Array<string>>();
                     for (let child of manifestElement.children) {
@@ -50,7 +65,8 @@ export class FileLoader {
                             manifest.set(id, [href, mediaType]);
                         }
                     }
-                    // 3. Parse the spine
+
+                    // 5. Parse the spine
                     const spineIds = new Array<string>();
                     const spine = opfDoc.getElementsByTagName("spine")[0];
                     for (let child of spine.children) {
@@ -62,13 +78,14 @@ export class FileLoader {
                             spineIds.push(idref);
                         }
                     }
-                    // 4. Parse the table of contents (NCX file)
+
+                    // 6. Parse the table of contents (NCX file)
                     const tocId = spine.getAttribute("toc")!;
                     const [tocFileName, tocMediaType] = manifest.get(tocId)!;
                     const toc = new Map<string, string>();
                     // Only read TOC files NCX media type
                     if (tocMediaType == "application/x-dtbncx+xml") {
-                        const tocPath = "OEBPS/" + tocFileName;
+                        const tocPath = rootDir + tocFileName;
                         const tocEntry = entries.find(e => e.filename == tocPath);
                         if (!tocEntry) {
                             throw new Error(`missing TOC file '${tocEntry}' specified in manifest & spine`);
@@ -80,7 +97,7 @@ export class FileLoader {
                             if (child.nodeName == "navPoint") {
                                 const navLabel = child.getElementsByTagName("navLabel")[0];
                                 const content = child.getElementsByTagName("content")[0];
-                                // TODO: Add support for nested navoints. A navPoint optionally has navPoint children.
+                                // TODO: Add support for nested navPoints. A navPoint optionally has navPoint children.
                                 if (!navLabel || !content) {
                                     throw new Error(`missing required attrbute navLabel or conent on navPoint: ${child.outerHTML}`);
                                 }
@@ -96,14 +113,14 @@ export class FileLoader {
                         }
                     }
 
-                    // 5. Load the sections
+                    // 7. Load the sections
                     const sections = new Array<FileSection>();
                     for (let id of spineIds) {
                         const [fileName, mediaType] = manifest.get(id)!;
                         if (!fileName) {
                             throw new Error(`no item in manifest for spine id ${id}`);
                         }
-                        const filePath = "OEBPS/" + fileName;
+                        const filePath = rootDir + fileName;
                         const fileEntry = entries.find(e => e.filename == filePath);
                         if (!fileEntry) {
                             throw new Error(`missing file ${filePath} specified in spine`);
