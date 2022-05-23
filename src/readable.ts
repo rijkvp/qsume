@@ -1,9 +1,9 @@
-export class DocumentSection {
-    filename: string;
-    title: string;
+export class FileSection {
+    filename: string | null;
+    title: string | null;
     words: string[];
 
-    constructor(filename: string, title: string, words: string[]) {
+    constructor(filename: string | null, title: string | null, words: string[]) {
         this.filename = filename;
         this.title = title;
         this.words = words;
@@ -12,11 +12,11 @@ export class DocumentSection {
 
 export class ReadableFile {
     filename: string;
-    title: string;
-    author: string;
-    sections: Array<DocumentSection>;
+    title: string | null;
+    author: string | null;
+    sections: Array<FileSection>;
 
-    constructor(filename: string, title: string, author: string, sections: DocumentSection[]) {
+    constructor(filename: string, title: string | null, author: string | null, sections: FileSection[]) {
         this.filename = filename;
         this.title = title;
         this.author = author;

@@ -1,6 +1,6 @@
 import { Control, ControlType } from "./control";
 import { FileLoader } from "./loader";
-import { DocumentSection, ReadableFile } from "./readable";
+import { FileSection, ReadableFile } from "./readable";
 import { textToWords } from "./util";
 
 let r: Reader;
@@ -51,24 +51,8 @@ class Reader {
         });
         document.getElementById('manual-input-submit')!.addEventListener('click', (e: any) => {
             const text = (<HTMLInputElement>document.getElementById('manual-input')!).value;
-            const file = new ReadableFile("(unkown)", "Pasted Text", "", [new DocumentSection("-", "-", textToWords(text))]);
+            const file = new ReadableFile("(manual input)", null, null, [new FileSection("-", "-", textToWords(text))]);
             this.setFile(file);
-        });
-        document.getElementById('url-input-submit')!.addEventListener('click', (e: any) => {
-            const url = (<HTMLInputElement>document.getElementById('url-input')!).value;
-            fetch(url)
-                .then(response => {
-                    if (response.ok) {
-                        response.text();
-                    } else {
-                        throw Error(`Failed to get content from web: ${response.status} - ${response.statusText}`);
-                    }
-                })
-                .then(text => {
-                    console.log(text);
-                }).catch(err => {
-                    console.log(err);
-                });
         });
 
         this.playButton = document.getElementById("play-button")!;
@@ -85,7 +69,7 @@ class Reader {
         this.timer = 0;
         this.currentSection = 0;
         this.word = 0;
-        this.wordContainer.innerHTML = this.file.title;
+        this.wordContainer.innerHTML = this.file.title ?? this.file.filename;
         this.playButton.removeAttribute("disabled");
         this.playButton.innerHTML = "Start";
     }
@@ -115,12 +99,12 @@ class Reader {
                         const progress = (wordNumber / totalWords * 100).toFixed(2);
                         const wordsLeft = totalWords - wordNumber;
                         const timeLeft = new Date(wordsLeft * delay * 1000).toISOString().substring(11, 19)
-                        r.statusContainer.innerHTML = `${r.file.title} - ${wordNumber}/${totalWords} - ${progress}% - ${timeLeft}`;
+                        r.statusContainer.innerHTML = `${r.file.title ?? r.file.filename} - ${wordNumber}/${totalWords} - ${progress}% - ${timeLeft}`;
                         if (r.file.sections.length > 1) {
                             const sectionProgress = (r.word / section.words.length * 100).toFixed(2);
                             const sectionWordsLeft = section.words.length - r.word;
                             const sectionTimeLeft = new Date(sectionWordsLeft * delay * 1000).toISOString().substring(11, 19)
-                            r.statusContainer.innerHTML += `<br>${section.title} (${r.currentSection + 1}/${r.file.sections.length}) - ${r.word}/${section.words.length} - ${sectionProgress}% - ${sectionTimeLeft}`;
+                            r.statusContainer.innerHTML += `<br>${section.title ?? section.filename ?? "(section)"} (${r.currentSection + 1}/${r.file.sections.length}) - ${r.word}/${section.words.length} - ${sectionProgress}% - ${sectionTimeLeft}`;
                         }
                     } else {
                         r.currentSection++;

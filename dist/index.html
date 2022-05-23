@@ -68,12 +68,8 @@
                 <label for="file-input">Load text or EPUB file
                     <input type="file" id="file-input" name="file-input" accept="text/plain, application/epub+zip" />
                 </label>
-                <label for="url-input">Load from web (resricted by CORS)
-                    <input type="text" id="url-input" for="url-input" placeholder="Enter URL here" />
-                    <button id="url-input-submit">Load from web</button>
-                </label>
                 <label for="manual-input">Paste text manually
-                    <input type="text" id="manual-input" for="manual-input" placeholder="Enter text here" />
+                    <textarea id="manual-input" for="manual-input" placeholder="Enter text here.."></textarea>
                     <button id="manual-input-submit">Load text</button>
                 </label>
             </div>
@@ -98,7 +94,7 @@
                 </div>
                 <div>
                     <label for="fontsize-input" id="fontsize-label"
-                        data-tooltip="The font size in rem (relative size).">
+                        data-tooltip="The font size in px (pixels).">
                         Font size
                     </label>
                     <input type="range" id="fontsize-input" name="wpm-input" min="16" max="96" step="0.1">
