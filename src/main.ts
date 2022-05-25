@@ -13,7 +13,8 @@ window.addEventListener('load', () => {
 class Reader {
     // Containers
     wordContainer: HTMLElement;
-    statusContainer: HTMLElement;
+    statusContainer1: HTMLElement;
+    statusContainer2: HTMLElement;
 
     playButton: HTMLElement;
 
@@ -33,10 +34,11 @@ class Reader {
 
     constructor() {
         this.wordContainer = document.getElementById("word")!;
-        this.statusContainer = document.getElementById("status")!;
+        this.statusContainer1 = document.getElementById("status1")!;
+        this.statusContainer2 = document.getElementById("status2")!;
 
         this.wpmControl = new Control("wpm", ControlType.Range, 300, "Speed ", " WPM");
-        this.fontSizeControl = new Control("fontsize", ControlType.Range, 64, "Font size ", "px", (value: any) => {
+        this.fontSizeControl = new Control("fontsize", ControlType.Range, 42, "Font size ", "px", (value: any) => {
             document.getElementById("word")!.style.fontSize = value.toString() + "px";
         });
         this.lowerCaseControl = new Control("lowercase", ControlType.Checkbox, false, "Lowercase");
@@ -55,12 +57,12 @@ class Reader {
             this.setFile(file);
         });
 
-        this.playButton = document.getElementById("play-button")!;
-        this.playButton.addEventListener('click', () => {
-            this.isRunning = !this.isRunning;
-            this.playButton.innerText = this.isRunning ? "Pause" : "Resume";
-            this.timer = 0;
-        });
+        this.playButton = document.getElementById("play-btn")!;
+        this.playButton.addEventListener('click', () => this.toggleRunning());
+        let previousSectionButton = document.getElementById("previous-section-btn")!;
+        let nextSectionButton = document.getElementById("next-section-btn")!;
+        previousSectionButton.addEventListener('click', () => this.addSection(-1));
+        nextSectionButton.addEventListener('click', () => this.addSection(1));
     }
 
     private setFile(file: ReadableFile) {
@@ -71,11 +73,25 @@ class Reader {
         this.word = 0;
         this.wordContainer.innerHTML = this.file.title ?? this.file.filename;
         this.playButton.removeAttribute("disabled");
-        this.playButton.innerHTML = "Start";
+        this.playButton.innerHTML = "▶️";
     }
 
     start() {
         window.requestAnimationFrame(Reader.loop);
+    }
+
+    toggleRunning() {
+        this.timer = 0;
+        this.isRunning = !this.isRunning;
+        this.playButton.innerText = this.isRunning ? "⏸️" : "▶️";
+    }
+
+    addSection(offset: number) {
+        if (this.file) {
+            // TODO: Validate offset
+            this.currentSection += offset;
+            this.word = 0;
+        }
     }
 
     private static loop(time: DOMHighResTimeStamp) {
@@ -99,12 +115,12 @@ class Reader {
                         const progress = (wordNumber / totalWords * 100).toFixed(2);
                         const wordsLeft = totalWords - wordNumber;
                         const timeLeft = new Date(wordsLeft * delay * 1000).toISOString().substring(11, 19)
-                        r.statusContainer.innerHTML = `${r.file.title ?? r.file.filename} - ${wordNumber}/${totalWords} - ${progress}% - ${timeLeft}`;
+                        r.statusContainer1.innerHTML = `<td>${r.file.title ?? r.file.filename}</td><td>${wordNumber}/${totalWords}</td><td>${progress}%</td><td>${timeLeft}</td>`;
                         if (r.file.sections.length > 1) {
                             const sectionProgress = (r.word / section.words.length * 100).toFixed(2);
                             const sectionWordsLeft = section.words.length - r.word;
                             const sectionTimeLeft = new Date(sectionWordsLeft * delay * 1000).toISOString().substring(11, 19)
-                            r.statusContainer.innerHTML += `<br>${section.title ?? section.filename ?? "(section)"} (${r.currentSection + 1}/${r.file.sections.length}) - ${r.word}/${section.words.length} - ${sectionProgress}% - ${sectionTimeLeft}`;
+                            r.statusContainer2.innerHTML = `<td>${section.title ?? section.filename ?? "(section)"} (${r.currentSection + 1}/${r.file.sections.length})</td><td>${r.word}/${section.words.length}</td><td>${sectionProgress}%</td><td>${sectionTimeLeft}</td>`;
                         }
                     } else {
                         r.currentSection++;

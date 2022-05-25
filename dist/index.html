@@ -4,18 +4,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
     <style>
         @font-face {
-            font-family: 'Inter';
+            font-family: "Inter";
             src: url('font/Inter.ttf') format('woff2-variations');
             font-weight: 125 950;
             font-stretch: 75% 125%;
             font-style: oblique 0deg 12deg;
         }
 
+        /* Responsiveness & defaults */
         * {
-            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         html {
@@ -23,27 +24,128 @@
             width: 100%;
         }
 
+        main {
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        @media(min-width: 576px) {
+            main {
+                max-width: 510px;
+            }
+        }
+
+        @media(min-width: 768px) {
+            main {
+                max-width: 700px;
+            }
+        }
+
+        @media(min-width: 1200px) {
+            main {
+                max-width: 1130px;
+            }
+        }
+
+        /* Base markup */
+        :root {
+            --font-size: 18px;
+            --window-gap: 32px;
+        }
+
+        * {
+            font-family: "Inter", sans-serif;
+        }
+
+        body {
+            color: #1b2832;
+            line-height: 1.5;
+            font-size: var(--font-size);
+        }
+
+        button {
+            padding: 4px 10px;
+            margin: 4px;
+            text-align: center;
+            font-weight: bold;
+            font-size: var(--font-size);
+            border: none;
+            border-radius: 4px;
+            min-width: 120px;
+            color: #fff;
+            background-color: rgba(34, 139, 230);
+        }
+
+        .control-btn {
+            min-width: 0;
+            width: 48px;
+            height: 48px;
+            font-size: 2rem;
+        }
+
+        /* Typography  */
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        .lead {
+            font-size: 1.3rem;
+            color: #73828c;
+        }
+
+        /* Conatiner layout */
         #window {
             background-color: rgba(0, 0, 0, 0.1);
-            border-radius: 32px;
-            margin: 32px;
-            padding: 64px;
-            height: 400px;
+            border-radius: 8px;
+            padding: var(--window-gap);
+            margin: 32px 0;
+
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px
         }
 
         #word {
             text-align: center;
             font-weight: 300;
-            line-height: 242px;
+            padding: 64px 0;
+            min-height: 200px;
         }
 
         #word strong {
             font-weight: 600;
         }
 
-        #play-button {
-            max-width: 200px;
+        #controls {
+            text-align: center;
+        }
+
+        #status {
+            min-height: 80px;
+            padding: 8px;
+            text-align: center;
+        }
+        #status table {
             margin: 0 auto;
+            text-align: left;
+        }
+        #status table td {
+            min-width: 100px;
+            padding: 2px 6px;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: vertical;
+            align-items: stretch;
+            flex-wrap: wrap;
+            gap: var(--window-gap);
+        }
+
+        .control {
+            display: block;
         }
     </style>
     <script type="module" src="bundle.js"></script>
@@ -51,53 +153,66 @@
 </head>
 
 <body>
-    <main class="container">
-        <hgroup>
-            <h1>Qsume</h1>
-            <h3>Quick content consumption using speed reading</h3>
-        </hgroup>
+    <main>
+        <h1>Qsume</h1>
+        <p class="lead">Quick content consumption using speed reading</p>
 
         <div id="window">
-            <div id="word"></div>
-            <button id="play-button" disabled>Start</button>
-        </div>
-        <div id="status"></div>
-        <div id="source">
-            <h3>Source</h3>
-            <div class="grid">
-                <label for="file-input">Load text or EPUB file
-                    <input type="file" id="file-input" name="file-input" accept="text/plain, application/epub+zip" />
-                </label>
-                <label for="manual-input">Paste text manually
-                    <textarea id="manual-input" for="manual-input" placeholder="Enter text here.."></textarea>
-                    <button id="manual-input-submit">Load text</button>
-                </label>
+            <div id="status">
+                <table>
+                    <tr>
+                        <th>Title</th>
+                        <th>Word</th>
+                        <th>Progres</th>
+                        <th>Time left</th>
+                    </tr>
+                    <tr id="status1"></tr>
+                    <tr id="status2"></tr>
+                </table>
             </div>
-        </div>
-        <div id="controls">
-            <h3>Controls</h3>
-            <div class="grid">
-                <div>
-                    <input type="checkbox" id="lowercase-input" name="lowercase-input" checked>
-                    <label for="lowercase-input" id="lowercase-label">Lowercase</label>
-                    <br>
-                    <input type="checkbox" id="charthickening-input" name="charthickening-input" checked>
-                    <label for="charthickening-input" id="charthickening-label"
-                        data-tooltip="Makes characters 'thicker' to improve readability.">Character
-                        thickening</label>
+            <div id="word"></div>
+            <div id="controls">
+                <button id="previous-section-btn" class="control-btn">⏮️</button>
+                <button id="play-btn" class="control-btn" disabled>▶️</button>
+                <button id="next-section-btn" class="control-btn">⏭️</button>
+            </div>
+            <div class="row">
+                <div id="source">
+                    <h2>Source</h2>
+                    <div class="control">
+                        <label for="file-input">Load text or EPUB file</label>
+                        <input type="file" id="file-input" name="file-input"
+                            accept="text/plain, application/epub+zip" />
+                    </div>
+                    <div class="control">
+                        <label for="manual-input">Paste text manually</label>
+                        <textarea id="manual-input" for="manual-input" placeholder="Enter text here.."></textarea>
+                        <button id="manual-input-submit">Load text</button>
+                    </div>
                 </div>
-                <div>
-                    <label for="wpm-input" id="wpm-label" data-tooltip="The speed in WPM (Words Per Minute).">
-                        WPM
-                    </label>
-                    <input type="range" id="wpm-input" name="wpm-input" min="100" max="800" step="10">
-                </div>
-                <div>
-                    <label for="fontsize-input" id="fontsize-label"
-                        data-tooltip="The font size in px (pixels).">
-                        Font size
-                    </label>
-                    <input type="range" id="fontsize-input" name="wpm-input" min="16" max="96" step="0.1">
+                <div id="settings">
+                    <h2>Settings</h2>
+                    <div class="control">
+                        <input type="checkbox" id="lowercase-input" name="lowercase-input" checked>
+                        <label for="lowercase-input" id="lowercase-label">Lowercase</label>
+                        <br>
+                        <input type="checkbox" id="charthickening-input" name="charthickening-input" checked>
+                        <label for="charthickening-input" id="charthickening-label"
+                            data-tooltip="Makes characters 'thicker' to improve readability.">Character
+                            thickening</label>
+                    </div>
+                    <div class="control">
+                        <label for="wpm-input" id="wpm-label" data-tooltip="The speed in WPM (Words Per Minute).">
+                            WPM
+                        </label>
+                        <input type="range" id="wpm-input" name="wpm-input" min="100" max="800" step="10">
+                    </div>
+                    <div class="control">
+                        <label for="fontsize-input" id="fontsize-label" data-tooltip="The font size in px (pixels).">
+                            Font size
+                        </label>
+                        <input type="range" id="fontsize-input" name="wpm-input" min="16" max="96" step="0.1">
+                    </div>
                 </div>
             </div>
         </div>
