@@ -36,7 +36,10 @@ export class FileLoader {
                     // NOTE: Only one rootfile is supported for now
                     const rootFile = containerDoc.getElementsByTagName("rootfile")[0];
                     const rootFilePath = rootFile.getAttribute("full-path")!;
-                    const rootDir = rootFilePath.split("/").slice(0,-1).join("/") 
+                    let rootDir = rootFilePath.split("/").slice(0,-1).join("/") + "/";
+                    if (rootDir == "/") {
+                        rootDir = "";
+                    }
 
                     // 2. Read opf file
                     const opfEntry = entries.find(e => e.filename == rootFilePath);
