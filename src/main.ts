@@ -15,6 +15,7 @@ class Reader {
     wordContainer: HTMLElement;
     statusContainer1: HTMLElement;
     statusContainer2: HTMLElement;
+    sectionsContainer: HTMLElement;
 
     playButton: HTMLElement;
 
@@ -36,6 +37,7 @@ class Reader {
         this.wordContainer = document.getElementById("word")!;
         this.statusContainer1 = document.getElementById("status1")!;
         this.statusContainer2 = document.getElementById("status2")!;
+        this.sectionsContainer = document.getElementById("sections")!;
 
         this.wpmControl = new Control("wpm", ControlType.Range, 300, "Speed ", " WPM");
         this.fontSizeControl = new Control("fontsize", ControlType.Range, 42, "Font size ", "px", (value: any) => {
@@ -74,6 +76,23 @@ class Reader {
         this.wordContainer.innerHTML = this.file.title ?? this.file.filename;
         this.playButton.removeAttribute("disabled");
         this.playButton.innerHTML = "▶️";
+        this.updateSections();
+    }
+
+    private updateSections() {
+        console.log("updateSections");
+        let counter = 0;
+        this.sectionsContainer.innerHTML = '';
+        for (let section of this.file!.sections) {
+            let label = section.title ?? `Section ${counter + 1} (${section.filename})` ?? `Section ${counter + 1}`;
+            let element = document.createElement("li");
+            const sectionNumber = counter;
+            element.addEventListener('click', () => this.goToSection(sectionNumber));
+            element.className = 'section-nav';
+            element.innerText = label;
+            this.sectionsContainer.appendChild(element);
+            counter++;
+        }
     }
 
     start() {
@@ -86,12 +105,14 @@ class Reader {
         this.playButton.innerText = this.isRunning ? "⏸️" : "▶️";
     }
 
+    goToSection(section: number) {
+        this.currentSection = section;
+        this.word = 0;
+    }
+
     addSection(offset: number) {
-        if (this.file) {
-            // TODO: Validate offset
-            this.currentSection += offset;
-            this.word = 0;
-        }
+        // TODO: Validate offset
+        this.goToSection(this.currentSection + offset);
     }
 
     private static loop(time: DOMHighResTimeStamp) {
@@ -115,6 +136,8 @@ class Reader {
                         const progress = (wordNumber / totalWords * 100).toFixed(2);
                         const wordsLeft = totalWords - wordNumber;
                         const timeLeft = new Date(wordsLeft * delay * 1000).toISOString().substring(11, 19)
+
+                        // Update status
                         r.statusContainer1.innerHTML = `<td>${r.file.title ?? r.file.filename}</td><td>${wordNumber}/${totalWords}</td><td>${progress}%</td><td>${timeLeft}</td>`;
                         if (r.file.sections.length > 1) {
                             const sectionProgress = (r.word / section.words.length * 100).toFixed(2);
