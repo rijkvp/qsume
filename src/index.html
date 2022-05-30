@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="style.css">
+    <title>Qsume</title>
+</head>
+
+<body>
+    <main>
+        <h1>Qsume</h1>
+        <p class="lead">Quick content consumption using speed reading</p>
+
+        <div id="window">
+            <div id="status">
+                <table>
+                    <tr>
+                        <th>Title</th>
+                        <th>Word</th>
+                        <th>Progres</th>
+                        <th>Time left</th>
+                    </tr>
+                    <tr id="status1"></tr>
+                    <tr id="status2"></tr>
+                </table>
+            </div>
+            <div id="word"></div>
+            <div id="controls">
+                <button id="previous-section-btn" class="control-btn">⏮️</button>
+                <button id="play-btn" class="control-btn" disabled>▶️</button>
+                <button id="next-section-btn" class="control-btn">⏭️</button>
+            </div>
+            <div class="row">
+                <div id="navigation">
+                    <h2>Navigation</h2>
+                    <ul id="sections"></ul>
+                </div>
+                <div id="source">
+                    <h2>Source</h2>
+                    <div class="control">
+                        <label for="file-input">Load text or EPUB file</label>
+                        <input type="file" id="file-input" name="file-input"
+                            accept="text/plain, application/epub+zip" />
+                    </div>
+                    <div class="control">
+                        <label for="manual-input">Paste text manually</label>
+                        <br>
+                        <textarea id="manual-input" for="manual-input" placeholder="Enter text here.."></textarea>
+                        <br>
+                        <button id="manual-input-submit">Load text</button>
+                    </div>
+                </div>
+                <div id="settings">
+                    <h2>Settings</h2>
+                    <div class="control">
+                        <input type="checkbox" id="lowercase-input" name="lowercase-input" checked>
+                        <label for="lowercase-input" id="lowercase-label">Lowercase</label>
+                        <br>
+                        <input type="checkbox" id="charthickening-input" name="charthickening-input" checked>
+                        <label for="charthickening-input" id="charthickening-label"
+                            data-tooltip="Makes characters 'thicker' to improve readability.">Character
+                            thickening</label>
+                    </div>
+                    <div class="control">
+                        <label for="wpm-input" id="wpm-label" data-tooltip="The speed in WPM (Words Per Minute).">
+                            WPM
+                        </label>
+                        <input type="range" id="wpm-input" name="wpm-input" min="100" max="800" step="10">
+                    </div>
+                    <div class="control">
+                        <label for="fontsize-input" id="fontsize-label" data-tooltip="The font size in px (pixels).">
+                            Font size
+                        </label>
+                        <input type="range" id="fontsize-input" name="wpm-input" min="16" max="96" step="0.1">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>

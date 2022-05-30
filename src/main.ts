@@ -80,7 +80,6 @@ class Reader {
     }
 
     private updateSections() {
-        console.log("updateSections");
         let counter = 0;
         this.sectionsContainer.innerHTML = '';
         for (let section of this.file!.sections) {

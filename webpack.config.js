@@ -1,26 +1,24 @@
+const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
-const fs = require('fs');
 
-async function deleteSourceMaps(dir) {
-    const files = await fs.promises.readdir(dir);
-    for (const file of files) {
-        if (file.endsWith("js.map")) {
-            console.log(`Removing source map ${file}`);
-            await fs.promises.unlink(dir + "/" + file);
-        }
-    }
-}
-
-deleteSourceMaps("./dist");
+const devMode = process.env.NODE_ENV !== "production";
 
 module.exports = {
-    entry: './src/main.ts',
+    entry: ['./src/main.ts', './src/style.css'],
     module: {
         rules: [
             {
                 test: /\.ts$/,
                 use: 'ts-loader',
                 include: [path.resolve(__dirname, 'src')]
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                ],
             },
         ],
     },
@@ -29,6 +27,19 @@ module.exports = {
     },
     output: {
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'dist'),
+        path: path.resolve(__dirname, './dist'),
     },
+    performance: {
+        maxEntrypointSize: 512000,
+        maxAssetSize: 512000
+    },
+    plugins: [
+        new HtmlWebpackPlugin({
+            title: 'Qsume',
+            template: './src/index.html',
+            inject: 'body',
+            filename: 'index.html'
+        }),
+        new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/bundle/]),
+    ],
 };
