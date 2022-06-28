@@ -18,7 +18,6 @@ class Reader {
     sectionsContainer: HTMLElement;
 
     playButton: HTMLElement;
-
     // Controls
     wpmControl: Control;
     fontSizeControl: Control;
@@ -142,7 +141,8 @@ class Reader {
                             const sectionProgress = (r.word / section.words.length * 100).toFixed(2);
                             const sectionWordsLeft = section.words.length - r.word;
                             const sectionTimeLeft = new Date(sectionWordsLeft * delay * 1000).toISOString().substring(11, 19)
-                            r.statusContainer2.innerHTML = `<td>${section.title ?? section.filename ?? "(section)"} (${r.currentSection + 1}/${r.file.sections.length})</td><td>${r.word}/${section.words.length}</td><td>${sectionProgress}%</td><td>${sectionTimeLeft}</td>`;
+                            r.statusContainer2.innerHTML = `<td>${section.title ?? section.filename ?? "(section)"} (${r.currentSection + 1}/${r.file.sections.length})</td>
+                            <td>${r.word}/${section.words.length}</td><td>${sectionProgress}%</td><td>${sectionTimeLeft}</td>`;
                         }
                     } else {
                         r.currentSection++;
